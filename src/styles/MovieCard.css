@@ -1,0 +1,93 @@
+.movie-card {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  aspect-ratio: 2/3;
+  animation: fadeUp 0.4s ease both;
+}
+.movie-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(232,197,71,0.3);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+.movie-card.liked {
+  border-color: var(--liked);
+  box-shadow: 0 0 20px rgba(232,197,71,0.2);
+}
+
+/* ─── IMAGE ─── */
+.card-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s;
+  position: absolute; inset: 0;
+}
+.card-img.loading { opacity: 0; }
+.card-img.loaded  { opacity: 1; }
+
+/* ─── NO POSTER ─── */
+.card-no-poster {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--surface2) 0%, #0f0f1a 100%);
+  text-align: center;
+}
+.np-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.3; }
+.np-title {
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+/* ─── OVERLAY ─── */
+.card-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 12px;
+}
+.movie-card:hover .card-overlay { opacity: 1; }
+
+.overlay-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.overlay-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; color: var(--muted);
+}
+.overlay-rating { color: var(--accent); }
+
+/* ─── LIKE BUTTON ─── */
+.card-like-btn {
+  position: absolute; top: 8px; right: 8px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(10,10,15,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 3;
+}
+.card-like-btn:hover { background: rgba(232,197,71,0.2); border-color: var(--accent); }
+.movie-card.liked .card-like-btn { background: var(--accent); border-color: var(--accent); }
+.movie-card.liked .card-like-btn .heart-icon { filter: invert(1); }

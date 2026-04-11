@@ -1,0 +1,24 @@
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 3rem;
+}
+
+.load-more-wrap { text-align: center; margin: 1rem 0 2rem; }
+.btn-load-more {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 10px 28px;
+  border-radius: 50px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-load-more:hover { border-color: var(--accent); color: var(--accent); }
+
+@media (max-width: 768px) {
+  .movie-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+}
