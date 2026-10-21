@@ -8,14 +8,15 @@ import MovieModal from './components/MovieModal';
 import Toast from './components/Toast';
 import { useToast } from './hooks/useToast';
 import { useLikedMovies } from './hooks/useLikedMovies';
-import { fetchMovies, fetchRecommendations, fetchMovie } from './utils/api';
+import { fetchMovies, fetchRecommendations, fetchMovie, fetchGenres } from './utils/api';
 import './styles/global.css';
-import { BackendDownError } from './utils/api';
 
 const PAGE_SIZE = 40;
+const OFFLINE_MSG = "Can't reach the CineGraph server. Check the backend is running, then try again.";
 
 export default function App() {
   const [movies, setMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
   const [recommendations, setRecs] = useState([]);
   const [activeGenre, setActiveGenre] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,6 +32,10 @@ export default function App() {
   const { toast, showToast } = useToast();
   const { likedMovies, toggleLike, isLiked } = useLikedMovies(showToast);
 
+  useEffect(() => {
+    fetchGenres().then(setGenres).catch(console.error);
+  }, []);
+
   // ── Load movies (reset or append) ──
   const loadMovies = useCallback(async (reset = false) => {
     if (isLoading) return;
@@ -43,9 +48,7 @@ export default function App() {
       setHasMore(data.length === PAGE_SIZE);
       setCurrentSkip(skip + data.length);
     } catch (err) {
-      if (err.isBackendDown) {
-        showToast('⚠️ Server is offline. Try again later.');
-      }
+      if (err.isBackendDown) showToast(OFFLINE_MSG);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -60,15 +63,15 @@ export default function App() {
     if (!likedMovies.size) return;
     setShowRecs(true);
     setIsLoadingRecs(true);
+    setSidebarOpen(false);
+    requestAnimationFrame(() => document.getElementById('picks')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
     try {
       const ids = [...likedMovies.keys()];
       const data = await fetchRecommendations(ids);
       setRecs(data);
     } catch (err) {
-      if (err.isBackendDown) {
-        showToast('⚠️ Server is offline. Try again later.');
-      }
+      if (err.isBackendDown) showToast(OFFLINE_MSG);
       console.error(err);
       setRecs([]);
     } finally {
@@ -84,68 +87,71 @@ export default function App() {
       const data = await fetchMovie(movieId);
       setModalMovie(data);
     } catch (err) {
-      if (err.isBackendDown) {
-        showToast('⚠️ Server is offline. Try again later.');
-      }
+      if (err.isBackendDown) showToast(OFFLINE_MSG);
       console.error(err);
     } finally {
       setModalLoading(false);
     }
   };
 
-  const closeModal = () => { setModalMovie(null); setModalLoading(false); };
+  const closeModal = useCallback(() => { setModalMovie(null); setModalLoading(false); }, []);
 
-  const browseTitle = activeGenre || (searchQuery ? `"${searchQuery}"` : 'Top Rated');
+  const activeCount = genres.find(g => g.name === activeGenre)?.count;
+  const browseTitle = activeGenre || (searchQuery ? `Results for “${searchQuery}”` : 'Top rated');
+  const browseSub = activeGenre && activeCount
+    ? `${activeCount.toLocaleString()} movies, best rated first`
+    : searchQuery ? null : 'Best rated across the whole catalog';
 
   return (
     <>
-      <Header
-        searchQuery={searchQuery}
-        onSearch={setSearchQuery}
-        likedCount={likedMovies.size}
-        onSidebarToggle={() => setSidebarOpen(o => !o)}
-        onRecommend={getRecommendations}
-      />
+      <Header onSearch={setSearchQuery} likedCount={likedMovies.size} />
 
-      <LikedSidebar
-        open={sidebarOpen}
-        likedMovies={likedMovies}
-        onClose={() => setSidebarOpen(false)}
-        onRemove={toggleLike}
-        onRecommend={() => { getRecommendations(); setSidebarOpen(false); }}
-        onMovieClick={openModal}
-      />
+      <GenreChips genres={genres} activeGenre={activeGenre} onSelect={setActiveGenre} />
 
-      <main className="main-content">
-        <GenreChips activeGenre={activeGenre} onSelect={setActiveGenre} />
+      <div className="floor">
+        <main className="wall">
+          {showRecs && (
+            <RecommendSection
+              movies={recommendations}
+              isLoading={isLoadingRecs}
+              likedCount={likedMovies.size}
+              isLiked={isLiked}
+              onToggleLike={toggleLike}
+              onMovieClick={openModal}
+              onClose={() => setShowRecs(false)}
+            />
+          )}
 
-        {showRecs && (
-          <RecommendSection
-            movies={recommendations}
-            isLoading={isLoadingRecs}
-            likedCount={likedMovies.size}
-            isLiked={isLiked}
-            onToggleLike={toggleLike}
-            onMovieClick={openModal}
-          />
-        )}
+          <section aria-labelledby="wall-title">
+            <div className="sign-head">
+              <h2 id="wall-title" className="sign-title">{browseTitle}</h2>
+              {browseSub && <span className="sign-sub">{browseSub}</span>}
+            </div>
 
-        <div className="section-header">
-          <span className="section-title">{browseTitle}</span>
-          <span className="section-sub">Click a movie to learn more · ♥ to add to your picks</span>
-        </div>
+            <MovieGrid
+              movies={movies}
+              isLoading={isLoading && movies.length === 0}
+              isLoadingMore={isLoading && movies.length > 0}
+              isLiked={isLiked}
+              onToggleLike={toggleLike}
+              onMovieClick={openModal}
+              onLoadMore={() => loadMovies(false)}
+              hasMore={hasMore}
+              skeletonCount={PAGE_SIZE}
+              pageSize={PAGE_SIZE}
+            />
+          </section>
+        </main>
 
-        <MovieGrid
-          movies={movies}
-          isLoading={isLoading && movies.length === 0}
-          isLiked={isLiked}
-          onToggleLike={toggleLike}
+        <LikedSidebar
+          open={sidebarOpen}
+          likedMovies={likedMovies}
+          onToggle={() => setSidebarOpen(o => !o)}
+          onRemove={toggleLike}
+          onRecommend={getRecommendations}
           onMovieClick={openModal}
-          onLoadMore={() => loadMovies(false)}
-          hasMore={hasMore}
-          skeletonCount={PAGE_SIZE}
         />
-      </main>
+      </div>
 
       {(modalLoading || modalMovie) && (
         <MovieModal

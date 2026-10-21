@@ -1,22 +1,35 @@
-.recommend-section {
-  display: block;
-  margin-bottom: 4rem;
-  animation: fadeUp 0.5s ease;
+.picks {
+  margin: 0 -28px 40px;
+  padding: 0 28px 32px;
+  background: var(--panel);
+  border-bottom: 3px solid var(--ink);
 }
 
-.recommend-header {
-  display: flex; align-items: center; gap: 16px;
-  margin-bottom: 1.5rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(232,197,71,0.08), rgba(255,107,74,0.05));
-  border: 1px solid rgba(232,197,71,0.2);
-  border-radius: var(--radius);
+.picks-sign {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 -28px 24px;
+  padding: 16px 20px 16px 28px;
+  background: var(--pick);
+  color: #fff;
 }
-.recommend-icon { font-size: 2.5rem; }
-.recommend-header h2 {
-  font-family: 'DM Serif Display', serif;
-  font-style: italic;
-  font-size: 1.6rem;
-  margin-bottom: 2px;
+.picks-sign h2 {
+  font-family: var(--sign);
+  font-stretch: 70%;
+  font-weight: 800;
+  font-size: 34px;
+  line-height: 1;
+  text-transform: uppercase;
 }
-.recommend-header p { color: var(--muted); font-size: 0.85rem; }
+.picks-sign p { margin-top: 4px; font-size: 14px; color: #E3F4EC; }
+.picks-sign .icon-btn { color: #fff; }
+.picks-sign .icon-btn:hover { background: var(--pick-dk); }
+.picks-sign :focus-visible { outline-color: #fff; }
+
+@media (max-width: 900px) {
+  .picks { margin: 0 -16px 32px; padding: 0 16px 24px; }
+  .picks-sign { margin: 0 -16px 18px; padding: 12px 10px 12px 16px; }
+  .picks-sign h2 { font-size: 26px; }
+}

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useDebounce } from '../hooks/useDebounce';
+import Icon from './Icon';
 import '../styles/Header.css';
 
-export default function Header({ onSearch, likedCount, onSidebarToggle, onRecommend }) {
+export default function Header({ onSearch, likedCount }) {
   const [input, setInput] = useState('');
 
   const handleInput = (e) => {
@@ -12,36 +12,23 @@ export default function Header({ onSearch, likedCount, onSidebarToggle, onRecomm
 
   return (
     <header className="header">
-      <div className="logo">Cine<span>Graph</span></div>
+      <a className="logo" href="/">CineGraph</a>
 
-      <div className="search-wrap">
-        <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+      <label className="search">
+        <span className="visually-hidden">Search movies by title</span>
+        <Icon name="search" size={18} />
         <input
-          type="text"
-          className="search-input"
-          placeholder="Search 9,000+ movies…"
+          type="search"
+          placeholder="Search 9,000+ movies"
           autoComplete="off"
           value={input}
           onChange={handleInput}
         />
-      </div>
+      </label>
 
-      <div className="header-actions">
-        <button className="liked-pill" onClick={onSidebarToggle}>
-          <span className="heart">♥</span>
-          <span>{likedCount}</span> liked
-        </button>
-        <button
-          className="btn-recommend"
-          disabled={likedCount === 0}
-          onClick={onRecommend}
-        >
-          ✦ Get Recommendations
-        </button>
-      </div>
+      <span className="header-count" aria-live="polite">
+        <b>{likedCount}</b> in your stack
+      </span>
     </header>
   );
 }

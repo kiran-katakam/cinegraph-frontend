@@ -3,12 +3,12 @@ import Skeleton from './Skeleton';
 import '../styles/MovieGrid.css';
 
 export default function MovieGrid({
-  movies, isLoading, isLiked, onToggleLike, onMovieClick,
-  onLoadMore, hasMore, skeletonCount = 40,
+  movies, isLoading, isLoadingMore, isLiked, onToggleLike, onMovieClick,
+  onLoadMore, hasMore, skeletonCount = 40, pageSize = 40,
 }) {
   if (isLoading) {
     return (
-      <div className="movie-grid">
+      <div className="movie-grid" aria-busy="true">
         {Array.from({ length: skeletonCount }).map((_, i) => (
           <Skeleton key={i} className="card-skeleton" />
         ))}
@@ -18,12 +18,9 @@ export default function MovieGrid({
 
   if (!movies.length) {
     return (
-      <div className="movie-grid">
-        <div className="empty-state">
-          <div className="es-icon">🎬</div>
-          <h3>No movies found</h3>
-          <p>Try a different search or genre</p>
-        </div>
+      <div className="empty-state">
+        <h3>No movies on this shelf</h3>
+        <p>Try a shorter title, check the spelling, or pick a different genre.</p>
       </div>
     );
   }
@@ -43,7 +40,9 @@ export default function MovieGrid({
       </div>
       {hasMore && (
         <div className="load-more-wrap">
-          <button className="btn-load-more" onClick={onLoadMore}>Load more</button>
+          <button className="btn btn-outline" onClick={onLoadMore} disabled={isLoadingMore}>
+            {isLoadingMore ? 'Loading…' : `Load ${pageSize} more`}
+          </button>
         </div>
       )}
     </>

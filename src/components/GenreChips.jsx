@@ -1,31 +1,30 @@
-import { useEffect, useState } from 'react';
-import { fetchGenres } from '../utils/api';
+import { aisleColor } from '../utils/format';
 import '../styles/GenreChips.css';
 
-export default function GenreChips({ activeGenre, onSelect }) {
-  const [genres, setGenres] = useState([]);
-
-  useEffect(() => {
-    fetchGenres().then(setGenres).catch(console.error);
-  }, []);
+export default function GenreChips({ genres, activeGenre, onSelect }) {
+  // "(no genres listed)" is a MovieLens placeholder, not an aisle.
+  const aisles = genres.filter(g => !g.name.startsWith('('));
 
   return (
-    <div className="genre-scroll">
-      <button
-        className={`chip ${!activeGenre ? 'active' : ''}`}
-        onClick={() => onSelect(null)}
-      >
-        All
-      </button>
-      {genres.map(g => (
-        <button
-          key={g.name}
-          className={`chip ${activeGenre === g.name ? 'active' : ''}`}
-          onClick={() => onSelect(g.name)}
-        >
-          {g.name}
-        </button>
+    <nav className="aisles" aria-label="Genres">
+      <Aisle name="All" active={!activeGenre} onClick={() => onSelect(null)} />
+      {aisles.map(g => (
+        <Aisle key={g.name} name={g.name} active={activeGenre === g.name} onClick={() => onSelect(g.name)} />
       ))}
-    </div>
+    </nav>
+  );
+}
+
+function Aisle({ name, active, onClick }) {
+  const { bg, fg } = name === 'All' ? { bg: '#15181E', fg: '#FFFFFF' } : aisleColor(name);
+  return (
+    <button
+      className={`aisle ${active ? 'active' : ''}`}
+      style={{ '--aisle-bg': bg, '--aisle-fg': fg }}
+      aria-pressed={active}
+      onClick={onClick}
+    >
+      {name}
+    </button>
   );
 }

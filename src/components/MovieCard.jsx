@@ -1,55 +1,41 @@
 import { useState } from 'react';
+import Icon from './Icon';
+import { formatTitle, yearOf } from '../utils/format';
 import '../styles/MovieCard.css';
 
 export default function MovieCard({ movie, isLiked, onToggleLike, onClick }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const liked = isLiked(movie.movieId);
-
-  const rating = movie.rating ? movie.rating.toFixed(1) : '—';
-  const genres = (movie.genres || []).slice(0, 2).join(' · ');
+  const title = formatTitle(movie.title);
+  const year = yearOf(movie);
+  const genre = (movie.genres || []).filter(Boolean)[0];
 
   return (
-    <div
-      className={`movie-card ${liked ? 'liked' : ''}`}
-      onClick={() => onClick(movie.movieId)}
-    >
-      {movie.posterPath ? (
-        <img
-          className={`card-img ${imgLoaded ? 'loaded' : 'loading'}`}
-          src={movie.posterPath}
-          alt={movie.title}
-          onLoad={() => setImgLoaded(true)}
-          onError={e => { e.target.style.display = 'none'; }}
-        />
-      ) : (
-        <NoPoster title={movie.title} />
-      )}
-
-      <div className="card-overlay">
-        <div className="overlay-title">{movie.title}</div>
-        <div className="overlay-meta">
-          <span className="overlay-rating">★ {rating}</span>
-          {movie.releaseYear && <span>{movie.releaseYear}</span>}
-          {genres && <span>{genres}</span>}
-        </div>
-      </div>
+    <article className={`box ${liked ? 'liked' : ''}`}>
+      <button className="box-open" onClick={() => onClick(movie.movieId)}>
+        <span className="box-poster">
+          {movie.posterPath && !imgFailed ? (
+            <img src={movie.posterPath} alt="" loading="lazy" onError={() => setImgFailed(true)} />
+          ) : (
+            <span className="box-blank">{title}</span>
+          )}
+          <span className="box-num">#{movie.movieId}</span>
+        </span>
+        <span className="box-title">{title}</span>
+        <span className="box-meta">
+          {[year, genre].filter(Boolean).join(' · ')}
+          {movie.rating ? <span className="box-rating">{movie.rating.toFixed(1)}</span> : null}
+        </span>
+      </button>
 
       <button
-        className="card-like-btn"
-        title="Add to picks"
-        onClick={e => { e.stopPropagation(); onToggleLike(movie); }}
+        className="sticker"
+        aria-pressed={liked}
+        aria-label={liked ? `Remove ${title} from your stack` : `Add ${title} to your stack`}
+        onClick={() => onToggleLike(movie)}
       >
-        <span className="heart-icon">♥</span>
+        <Icon name={liked ? 'check' : 'plus'} size={18} />
       </button>
-    </div>
-  );
-}
-
-function NoPoster({ title }) {
-  return (
-    <div className="card-no-poster">
-      <div className="np-icon">🎬</div>
-      <div className="np-title">{title}</div>
-    </div>
+    </article>
   );
 }
